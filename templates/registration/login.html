@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>登录 · 生产线告警后台</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="login-body">
+  <div class="login-card">
+    <div class="login-head">
+      <span class="brand-dot brand-dot-lg"></span>
+      <h1>生产线告警后台</h1>
+      <p>请使用操作员账号登录</p>
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-error">{{ form.non_field_errors|join:"；" }}</div>
+    {% endif %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}{% if next %}?next={{ next }}{% endif %}"
+          class="login-form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <label class="field">
+        <span class="field-label">账号</span>
+        {{ form.username }}
+        {% if form.username.errors %}<span class="field-error">{{ form.username.errors|join:"；" }}</span>{% endif %}
+      </label>
+
+      <label class="field">
+        <span class="field-label">密码</span>
+        {{ form.password }}
+        {% if form.password.errors %}<span class="field-error">{{ form.password.errors|join:"；" }}</span>{% endif %}
+      </label>
+
+      <div class="field captcha-field" id="captcha-field"
+           {% if not captcha_required %}hidden{% endif %}>
+        <span class="field-label">验证码</span>
+        <div class="captcha-row">
+          {{ form.captcha }}
+          <img id="captcha-img" src="{{ captcha_url }}" alt="验证码"
+               title="看不清？点击刷新" width="130" height="44">
+          <button type="button" class="btn btn-ghost btn-sm" id="captcha-refresh">刷新</button>
+        </div>
+        <span class="field-hint">连续登录失败 {{ captcha_threshold }} 次后需输入验证码</span>
+        {% if form.captcha.errors %}<span class="field-error">{{ form.captcha.errors|join:"；" }}</span>{% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">登 录</button>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      var field = document.getElementById('captcha-field');
+      var img = document.getElementById('captcha-img');
+      var btn = document.getElementById('captcha-refresh');
+      function refresh() {
+        if (img) { img.src = '{{ captcha_url }}?t=' + Date.now(); }
+      }
+      if (img) { img.addEventListener('click', refresh); }
+      if (btn) { btn.addEventListener('click', refresh); }
+      // 服务端渲染时若需要验证码，强制加载最新图片
+      if (field && !field.hidden) { refresh(); }
+    })();
+  </script>
+</body>
+</html>

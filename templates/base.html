@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{% block title %}生产线告警后台{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{% url 'alarm-overview' %}">
+        <span class="brand-dot"></span>生产线告警后台
+      </a>
+      <div class="user-box">
+        {% if user.is_authenticated %}
+          <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+          <form method="post" action="{% url 'logout' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm">退出登录</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

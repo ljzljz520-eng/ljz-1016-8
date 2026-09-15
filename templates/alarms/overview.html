@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}告警概览 · 生产线告警后台{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <h1>告警概览</h1>
+  <p>实时监控各生产线运行状态与告警情况</p>
+</section>
+
+<section class="stat-grid">
+  <div class="stat-card stat-total">
+    <span class="stat-num">{{ stats.total }}</span>
+    <span class="stat-label">告警总数</span>
+  </div>
+  <div class="stat-card stat-critical">
+    <span class="stat-num">{{ stats.critical }}</span>
+    <span class="stat-label">紧急未处理</span>
+  </div>
+  <div class="stat-card stat-active">
+    <span class="stat-num">{{ stats.active }}</span>
+    <span class="stat-label">未处理告警</span>
+  </div>
+  <div class="stat-card stat-resolved">
+    <span class="stat-num">{{ stats.resolved }}</span>
+    <span class="stat-label">已恢复</span>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>各生产线告警分布</h2>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>产线编号</th><th>生产线</th><th>车间</th>
+          <th class="num">未处理</th><th class="num">其中紧急</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+          <tr>
+            <td>{{ line.code }}</td>
+            <td>{{ line.name }}</td>
+            <td>{{ line.location|default:"—" }}</td>
+            <td class="num">
+              {% if line.active_count %}<span class="badge">{{ line.active_count }}</span>{% else %}0{% endif %}
+            </td>
+            <td class="num">
+              {% if line.critical_count %}<span class="badge badge-critical">{{ line.critical_count }}</span>{% else %}0{% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="empty">暂无产线数据</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>最新告警</h2>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>级别</th><th>告警</th><th>生产线</th><th>状态</th><th>发生时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alarm in latest %}
+          <tr>
+            <td><span class="level level-{{ alarm.level }}">{{ alarm.get_level_display }}</span></td>
+            <td>
+              <div class="alarm-title">{{ alarm.title }}</div>
+              {% if alarm.message %}<div class="alarm-msg">{{ alarm.message }}</div>{% endif %}
+            </td>
+            <td>{{ alarm.line.name }}</td>
+            <td><span class="status status-{{ alarm.status }}">{{ alarm.get_status_display }}</span></td>
+            <td class="nowrap">{{ alarm.created_at|date:"m-d H:i" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="empty">暂无告警</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
